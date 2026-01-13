@@ -5,10 +5,12 @@ import Icon from "../Elements/Icon";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import { ThemeContext } from "../../context/themeContext";
 import { AuthContext } from "../../context/authContext";
+import { Backdrop, CircularProgress } from "@mui/material";
 
 const MainLayout = ({ children, title }) => {
   const { theme, setTheme } = useContext(ThemeContext);
   const { isAuthenticated, logout } = useContext(AuthContext);
+  const [isLoading, setIsLoading] = React.useState(false);
   const navigate = useNavigate();
 
   // 🔐 Jika user logout / token hilang → redirect ke login
@@ -29,7 +31,12 @@ const MainLayout = ({ children, title }) => {
   const menu = [
     { id: 1, name: "Overview", icon: <Icon.Overview />, link: "/" },
     { id: 2, name: "Balances", icon: <Icon.Balance />, link: "/balance" },
-    { id: 3, name: "Transaction", icon: <Icon.Transaction />, link: "/transaction" },
+    {
+      id: 3,
+      name: "Transaction",
+      icon: <Icon.Transaction />,
+      link: "/transaction",
+    },
     { id: 4, name: "Bills", icon: <Icon.Bill />, link: "/bill" },
     { id: 5, name: "Expenses", icon: <Icon.Expense />, link: "/expense" },
     { id: 6, name: "Goals", icon: <Icon.Goal />, link: "/goal" },
@@ -37,8 +44,12 @@ const MainLayout = ({ children, title }) => {
   ];
 
   const handleLogout = () => {
-    logout();
-    navigate("/login");
+    setIsLoading(true);
+    setTimeout(() => {
+      logout();
+      setIsLoading(false);
+      navigate("/login");
+    }, 3000);
   };
 
   return (
@@ -118,7 +129,19 @@ const MainLayout = ({ children, title }) => {
           />
         </header>
 
-        <main className="p-8 flex-1">{children}</main>
+        {isLoading ? (
+          <Backdrop
+            sx={(theme) => ({ color: "#fff", zIndex: theme.zIndex.drawer + 1 })}
+            open={isLoading}
+          >
+            <div className="flex flex-col items-center gap-1.5">
+              <CircularProgress color="inherit" />
+              <p>Logging out...</p>
+            </div>
+          </Backdrop>
+        ) : (
+          <main className="p-8 flex-1">{children}</main>
+        )}
       </div>
     </div>
   );
